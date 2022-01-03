@@ -1,7 +1,7 @@
 <template>
   <div class="home-page">
     <div class="header" v-if="!videoShow">
-      <div class="system-name">
+      <div class="system-name" @click="restData">
         <span class="logo"></span>
         <span class="title">智能户型设计推荐系统</span>
       </div>
@@ -30,32 +30,24 @@
     <div class="contain" v-if="!videoShow">
       <div class="step-1" v-if="curStep === '1'">
         <div class="img-border">
-          <span class="add-img"></span>
-          <span class="add-img-text">拖拽图片至此处</span>
+          <span class="add-img" v-if="!step1Img"></span>
+          <span class="add-img-text" v-if="!step1Img">拖拽图片至此处</span>
+          <img :src="step1Img" alt="" v-if="step1Img">
         </div>
         <div class="btn-action" @click="nextTo('2')"></div>
         <span class="text-tips">演示版本仅支持卫生间设计</span>
       </div>
       <div class="step-2" v-if="curStep === '2'">
         <div class="img-list">
-          <div class="item-img img-1">
-            <img src="../assets/img-demo.jpg" alt="">
-          </div>
-          <div class="item-img img-2">
-            <img src="../assets/img-demo.jpg" alt="">
-          </div>
-          <div class="item-img img-3">
-            <img src="../assets/img-demo.jpg" alt="">
-          </div>
-          <div class="item-img img-4">
-            <img src="../assets/img-demo.jpg" alt="">
+          <div class="item-img img-1" :class="`img-${index + 1}`" v-for="(item, index) in layoutList" :key="index" @click="getCurIndex(index)">
+            <img :src="item.layoutImage" alt="">
           </div>
         </div>
         <span class="action-btn" @click="nextTo('3')"></span>
       </div>
       <div class="step-3" v-if="curStep === '3'">
         <div class="img-show">
-          <img src="" alt="">
+          <img :src="layoutList[curIndex].layoutImage" alt="">
         </div>
         <div class="action-btn">
           <span class="similar-effect" @click="nextTo('4')"></span>
@@ -64,8 +56,8 @@
       </div>
       <div class="step-4" v-if="curStep === '4'">
         <div class="img-list">
-          <div class="item-img" v-for="item in imgList4" :key="item.imageUrl">
-            <img :src="item.imageUrl" alt="">
+          <div class="item-img" v-for="item in imgList4" :key="item">
+            <img :src="item" alt="">
           </div>
         </div>
         <span class="back" @click="backTo('3')"></span>
@@ -76,7 +68,6 @@
 
 <script>
 import LocalDate from '@/components/common/LocalDate'
-// import * as mqtt from "mqtt"
 import video1 from '../assets/video/step1-2.mp4'
 import video2 from '../assets/video/step2-3.mp4'
 import video3 from '../assets/video/step3-4.mp4'
@@ -88,11 +79,17 @@ export default {
   data () {
     return {
       videoShow: false,
-      curStep: '4',
+      curStep: '1',
       curVideo: '',
 
+      step1Img: '',
+      curIndex: 0,
+      layoutList: [],
       imgList4: []
     }
+  },
+  created () {
+    this.step1Img = ''
   },
   mounted () {
     // 连接选项
@@ -136,11 +133,16 @@ export default {
     })
     //接收消息
     client.on('message', (topic, message) => {
+      console.log('message：', message.toString())
       console.log('收到消息：', topic, message.toString())
+      let data = message.toString()
+      if (data) {
+        data = JSON.parse(data)
+        if (data.id) {
+          this.queryLayoutDataByHouseType(data.id)
+        }
+      }
     })
-    this.pushHouseType()
-    this.queryHouseTypeList()
-    this.queryLayoutDataByHouseType()
   },
   methods: {
     show() {
@@ -148,7 +150,6 @@ export default {
       // this.$refs.videoPlayer.play()
     },
     toPause () {
-      console.log('=========')
       this.videoShow = false
     },
     backTo (value) {
@@ -156,9 +157,17 @@ export default {
     },
     nextTo (value) {
       if (value === '2') {
+        if (!this.step1Img) {
+          this.$message.error('暂无可设计的图片')
+          return
+        }
         this.curVideo = video1
       }
       if (value === '3') {
+        if (!this.curIndex) {
+          this.$message.error('请选择其中一种户型图')
+          return
+        }
         this.curVideo = video2
       }
       if (value === '4') {
@@ -167,19 +176,23 @@ export default {
       this.curStep = value
       this.show()
     },
-    async pushHouseType () {
-      const res = await HomeServices.pushHouseType({id: 1})
-      console.log(res, '=-==res==11==')
+    async queryLayoutDataByHouseType (id) {
+      const res = await HomeServices.queryLayoutDataByHouseType({id})
+      const { houseTypeList, layoutList } = res.data.data
+      this.houseTypeList = houseTypeList
+      this.step1Img = houseTypeList[0].imageUrl
+      this.layoutList = layoutList
+      this.curStep = '1'
+      this.curIndex = ''
     },
-    async queryHouseTypeList () {
-      const res = await HomeServices.queryHouseTypeList()
-      this.imgList4 = res.data.data.splice(0, 6) || []
-      console.log(res, '=-==queryHouseTypeList===')
-
+    getCurIndex (index) {
+      this.curIndex = index
+      this.imgList4 = this.layoutList[index].effectPictureList.splice(0, 6) || []
     },
-    async queryLayoutDataByHouseType () {
-      const res = await HomeServices.queryLayoutDataByHouseType({id: 1})
-      console.log(res, '=-==queryLayoutDataByHouseType===')
+    restData () {
+      this.step1Img = ''
+      this.curStep = '1'
+      this.curIndex = ''
     }
   }
 } 
@@ -204,6 +217,7 @@ export default {
     position relative;
 
     .system-name {
+      cursor: pointer;
       width: rem(1702);
       height: rem(152);
       display: flex;
@@ -315,6 +329,10 @@ export default {
           color: #fcb28e;
           margin-top: rem(40);
         }
+        img {
+          height: 90%;
+          object-fit: cover;
+        }
       }
       .btn-action {
         cursor: pointer;
@@ -344,6 +362,14 @@ export default {
         background-image: url("../assets/step3-border.png");
         background-size: contain;
         background-repeat: no-repeat;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        img {
+          width: rem(2238);
+          height: rem(1256);
+          object-fit: contain;
+        }
       }
       .action-btn {
         display: flex;
@@ -355,6 +381,7 @@ export default {
           background-size: contain;
           background-repeat: no-repeat;
           margin-right: rem(95);
+          cursor: pointer;
         }
         .back {
           width: rem(270);
@@ -362,6 +389,7 @@ export default {
           background-image: url("../assets/back-icon.png");
           background-size: contain;
           background-repeat: no-repeat;
+          cursor: pointer;
         }
       }
     }
@@ -384,11 +412,14 @@ export default {
         background-size: contain;
         background-repeat: no-repeat;
         margin-bottom: rem(80);
+        display: flex;
 
         img {
-          width: 100%;
-          height: 100%;
+          width: rem(1126);
+          height: rem(634);
           object-fit: cover;
+          margin-top: rem(20);
+          margin-left: rem(18);
         }
 
         &:nth-child(3n + 2) {
@@ -402,6 +433,7 @@ export default {
         background-image: url("../assets/back-icon.png");
         background-size: contain;
         background-repeat: no-repeat;
+        cursor: pointer;
       }
     }
 
@@ -493,6 +525,7 @@ export default {
         background-image: url("../assets/step2-btn.png");
         background-size: contain;
         background-repeat: no-repeat;
+        cursor: pointer;
       }
     }
   }
