@@ -1,7 +1,7 @@
 <template>
   <div class="home-page">
     <div class="header" v-if="!videoShow">
-      <div class="system-name" @click="restData">
+      <div class="system-name">
         <span class="logo"></span>
         <span class="title">智能户型设计推荐系统</span>
       </div>
@@ -34,12 +34,12 @@
           <span class="add-img-text" v-if="!step1Img">拖拽图片至此处</span>
           <img :src="step1Img" alt="" v-if="step1Img">
         </div>
-        <div class="btn-action" @click="nextTo('2')"></div>
+        <div class="btn-action" :class="{'btn-action-active': step1Img}" @click="nextTo('2')"></div>
         <span class="text-tips">演示版本仅支持卫生间设计</span>
       </div>
       <div class="step-2" v-if="curStep === '2'">
         <div class="img-list">
-          <div class="item-img img-1" :class="`img-${index + 1}`" v-for="(item, index) in layoutList" :key="index" @click="getCurIndex(index)">
+          <div class="item-img" :class="`img-${index + 1} img-${index + 1}-${curIndex}`" v-for="(item, index) in layoutList" :key="index" @click="getCurIndex(index)">
             <img :src="item.layoutImage" alt="">
           </div>
         </div>
@@ -47,7 +47,7 @@
       </div>
       <div class="step-3" v-if="curStep === '3'">
         <div class="img-show">
-          <img :src="layoutList[curIndex].layoutImage" alt="">
+          <img :src="step3Img" alt="">
         </div>
         <div class="action-btn">
           <span class="similar-effect" @click="nextTo('4')"></span>
@@ -60,7 +60,7 @@
             <img :src="item" alt="">
           </div>
         </div>
-        <span class="back" @click="backTo('3')"></span>
+        <span class="back" @click="restData"></span>
       </div>
     </div>
   </div>
@@ -68,9 +68,6 @@
 
 <script>
 import LocalDate from '@/components/common/LocalDate'
-import video1 from '../assets/video/step1-2.mp4'
-import video2 from '../assets/video/step2-3.mp4'
-import video3 from '../assets/video/step3-4.mp4'
 import HomeServices from '@/services/home.js'
 export default {
   components: {
@@ -83,6 +80,7 @@ export default {
       curVideo: '',
 
       step1Img: '',
+      step3Img: '',
       curIndex: 0,
       layoutList: [],
       imgList4: []
@@ -158,20 +156,20 @@ export default {
     nextTo (value) {
       if (value === '2') {
         if (!this.step1Img) {
-          this.$message.error('暂无可设计的图片')
+          // this.$message.error('暂无可设计的图片')
           return
         }
-        this.curVideo = video1
+        this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step1-2.ea5032d.mp4'
       }
       if (value === '3') {
         if (!this.curIndex) {
           this.$message.error('请选择其中一种户型图')
           return
         }
-        this.curVideo = video2
+        this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step2-3.277204f.mp4'
       }
       if (value === '4') {
-        this.curVideo = video3
+        this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step3-4.617272e.mp4'
       }
       this.curStep = value
       this.show()
@@ -187,7 +185,8 @@ export default {
     },
     getCurIndex (index) {
       this.curIndex = index
-      this.imgList4 = this.layoutList[index].effectPictureList.splice(0, 6) || []
+      this.step3Img = this.layoutList[index].effectPictureList[0]
+      this.imgList4 = this.layoutList[index].effectPictureList.splice(1, 6) || []
     },
     restData () {
       this.step1Img = ''
@@ -343,6 +342,9 @@ export default {
         background-size: contain;
         background-repeat: no-repeat;
       }
+      .btn-action-active {
+        background-image: url("../assets/btn-icon-active.png");
+      }
       .text-tips {
         margin-top: rem(68);
         font-size: rem(56);
@@ -366,9 +368,10 @@ export default {
         justify-content: center;
         align-items: center;
         img {
-          width: rem(2238);
-          height: rem(1256);
-          object-fit: contain;
+          width: rem(2254);
+          height: rem(1264);
+          object-fit: cover;
+          margin-top: rem(6)
         }
       }
       .action-btn {
@@ -448,6 +451,7 @@ export default {
         align-items: center;
         justify-content: center;
         perspective: rem(3500);
+        height: rem(900);
       }
       .item-img {
         width: rem(703);
@@ -476,6 +480,15 @@ export default {
           left: rem(40);
         }
       }
+      .img-1-0 {
+        width: rem(783);
+        height: rem(944);
+        background-image: url("../assets/img1-active.png");
+        img {
+          top: rem(92);
+          left: rem(80);
+        }
+      }
       .img-2 {
         position: relative;
         height: rem(759);
@@ -488,6 +501,15 @@ export default {
           position: relative;
           top: rem(34);
           left: rem(10);
+        }
+      }
+      .img-2-1 {
+        width: rem(783);
+        height: rem(840);
+        background-image: url("../assets/img2-active.png");
+        img {
+          top: rem(74);
+          left: rem(50);
         }
       }
       .img-3 {
@@ -504,6 +526,15 @@ export default {
           left: rem(0);
         }
       }
+      .img-3-2 {
+        width: rem(783);
+        height: rem(834);
+        background-image: url("../assets/img3-active.png");
+        img {
+          top: rem(80);
+          left: rem(40);
+        }
+      }
       .img-4 {
         width: rem(703);
         height: rem(864);
@@ -516,6 +547,15 @@ export default {
           position: relative;
           top: rem(56);
           left: rem(-10);
+        }
+      }
+      .img-4-3 {
+        width: rem(783);
+        height: rem(944);
+        background-image: url("../assets/img4-active.png");
+        img {
+          top: rem(96);
+          left: rem(30);
         }
       }
       .action-btn {
