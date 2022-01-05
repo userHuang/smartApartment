@@ -1,7 +1,7 @@
 <template>
   <div class="home-page">
     <div class="header" v-if="!videoShow">
-      <div class="system-name">
+      <div class="system-name" @click="restData">
         <span class="logo"></span>
         <span class="title">智能户型设计推荐系统</span>
       </div>
@@ -43,7 +43,7 @@
             <img :src="item.layoutImage" alt="">
           </div>
         </div>
-        <span class="action-btn" @click="nextTo('3')"></span>
+        <span class="action-btn" :class="{'action-btn-active': curIndex !== ''}" @click="nextTo('3')"></span>
       </div>
       <div class="step-3" v-if="curStep === '3'">
         <div class="img-show">
@@ -81,7 +81,7 @@ export default {
 
       step1Img: '',
       step3Img: '',
-      curIndex: 0,
+      curIndex: '',
       layoutList: [],
       imgList4: []
     }
@@ -136,7 +136,7 @@ export default {
       let data = message.toString()
       if (data) {
         data = JSON.parse(data)
-        if (data.id) {
+        if (data.id && this.curStep === '1') {
           this.queryLayoutDataByHouseType(data.id)
         }
       }
@@ -162,7 +162,7 @@ export default {
         this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step1-2.ea5032d.mp4'
       }
       if (value === '3') {
-        if (!this.curIndex) {
+        if (this.curIndex === '') {
           this.$message.error('请选择其中一种户型图')
           return
         }
@@ -566,6 +566,9 @@ export default {
         background-size: contain;
         background-repeat: no-repeat;
         cursor: pointer;
+      }
+      .action-btn-active {
+        background-image: url("../assets/step2-btn-active.png");
       }
     }
   }
