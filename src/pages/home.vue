@@ -32,7 +32,7 @@
         <div class="img-border">
           <span class="add-img" v-if="!step1Img"></span>
           <span class="add-img-text" v-if="!step1Img">拖拽图片至此处</span>
-          <img :src="step1Img" alt="" v-if="step1Img">
+          <img class="img" :src="step1Img" alt="" v-if="step1Img"/>
         </div>
         <div class="btn-action" :class="{'btn-action-active': step1Img}" @click="nextTo('2')"></div>
         <span class="text-tips">演示版本仅支持卫生间设计</span>
@@ -47,7 +47,7 @@
       </div>
       <div class="step-3" v-if="curStep === '3'">
         <div class="img-show">
-          <img :src="step3Img" alt="">
+          <el-image class="img" :src="step3Img" alt="" :preview-src-list="[step3Img]"></el-image>
         </div>
         <div class="action-btn">
           <span class="similar-effect" @click="nextTo('4')"></span>
@@ -57,7 +57,7 @@
       <div class="step-4" v-if="curStep === '4'">
         <div class="img-list">
           <div class="item-img" v-for="item in imgList4" :key="item">
-            <img :src="item" alt="">
+            <el-image class="img" :src="item" alt="" :preview-src-list="imgList4"></el-image>
           </div>
         </div>
         <span class="back" @click="restData"></span>
@@ -163,7 +163,7 @@ export default {
       }
       if (value === '3') {
         if (this.curIndex === '') {
-          this.$message.error('请选择其中一种户型图')
+          // this.$message.error('请选择其中一种户型图')
           return
         }
         this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step2-3.277204f.mp4'
@@ -184,9 +184,10 @@ export default {
       this.curIndex = ''
     },
     getCurIndex (index) {
+      const layoutList = JSON.parse(JSON.stringify(this.layoutList))
       this.curIndex = index
-      this.step3Img = this.layoutList[index].effectPictureList[0]
-      this.imgList4 = this.layoutList[index].effectPictureList.splice(1, 6) || []
+      this.step3Img = layoutList[index].effectPictureList[0]
+      this.imgList4 = layoutList[index].effectPictureList.splice(1, 6) || []
     },
     restData () {
       this.step1Img = ''
@@ -328,7 +329,7 @@ export default {
           color: #fcb28e;
           margin-top: rem(40);
         }
-        img {
+        .img {
           height: 90%;
           object-fit: cover;
         }
@@ -367,7 +368,7 @@ export default {
         display: flex;
         justify-content: center;
         align-items: center;
-        img {
+        .img {
           width: rem(2254);
           height: rem(1264);
           object-fit: cover;
@@ -417,7 +418,7 @@ export default {
         margin-bottom: rem(80);
         display: flex;
 
-        img {
+        .img {
           width: rem(1126);
           height: rem(634);
           object-fit: cover;
