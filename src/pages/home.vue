@@ -136,7 +136,7 @@ export default {
       let data = message.toString()
       if (data) {
         data = JSON.parse(data)
-        if (data.id && this.curStep === '1') {
+        if (data.id) {
           this.queryLayoutDataByHouseType(data.id)
         }
       }
@@ -329,9 +329,10 @@ export default {
           color: #fcb28e;
           margin-top: rem(40);
         }
-        .img {
+        img {
+          width: 90%;
           height: 90%;
-          object-fit: cover;
+          object-fit: contain;
         }
       }
       .btn-action {
