@@ -33,5 +33,19 @@ export default {
       method: 'get',
       params
     })
+  },
+  query4GroupImageList (params) {
+    return Services.request({
+      url: `/nd-wisdom-layout/data/query4GroupImageList/${params.id}`,
+      method: 'get',
+      params
+    })
+  },
+  queryUserSelectRecommend (data) {
+    return Services.request({
+      url: `/nd-wisdom-layout/data/queryUserSelectRecommend`,
+      method: 'post',
+      data
+    })
   }
 }

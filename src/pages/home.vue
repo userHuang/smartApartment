@@ -39,22 +39,34 @@
       </div>
       <div class="step-2" v-if="curStep === '2'">
         <div class="img-list">
-          <div class="item-img" :class="`img-${index + 1} img-${index + 1}-${curIndex}`" v-for="(item, index) in layoutList" :key="index" @click="getCurIndex(index)">
+          <div class="item-img" :class="`img-${index + 1}`" v-for="(item, index) in layoutList" :key="index">
             <img :src="item.layoutImage" alt="">
           </div>
         </div>
-        <span class="action-btn" :class="{'action-btn-active': curIndex !== ''}" @click="nextTo('3')"></span>
+        <span class="action-btn action-btn-active" @click="nextTo('3')"></span>
       </div>
       <div class="step-3" v-if="curStep === '3'">
-        <div class="img-show">
-          <el-image class="img" :src="step3Img" alt="" :preview-src-list="[step3Img]"></el-image>
+        <span class="step-title">选择喜欢的方案</span>
+        <div class="img-contain">
+          <div class="item-model" v-for="(item, inx) in imgList3" :key="item.num">
+            <div class="item-img" v-for="(m, n) in item.effectPictureDtoList" :key="m.id">
+              <img class="img" :src="m.imageUrl" alt="" @click="selectImg(inx, n)">
+              <img class="icon" src="../assets/selected-icon.png" alt="" v-if="m.select">
+            </div>
+          </div>
         </div>
-        <div class="action-btn">
-          <span class="similar-effect" @click="nextTo('4')"></span>
-          <span class="back" @click="backTo('2')"></span>
-        </div>
+        <span class="action-btn action-btn-active" @click="nextTo('4')"></span>
       </div>
       <div class="step-4" v-if="curStep === '4'">
+        <div class="img-show">
+          <el-image class="img" :src="step4Img" alt="" :preview-src-list="[step4Img]"></el-image>
+        </div>
+        <div class="action-btn">
+          <span class="similar-effect" @click="nextTo('5')"></span>
+          <span class="back" @click="backTo('3')"></span>
+        </div>
+      </div>
+      <div class="step-5" v-if="curStep === '5'">
         <div class="img-list">
           <div class="item-img" v-for="item in imgList4" :key="item">
             <el-image class="img" :src="item" alt="" :preview-src-list="imgList4"></el-image>
@@ -80,10 +92,11 @@ export default {
       curVideo: '',
 
       step1Img: '',
-      step3Img: '',
+      step4Img: '',
       curIndex: '',
       layoutList: [],
-      imgList4: []
+      imgList4: [],
+      imgList3: []
     }
   },
   created () {
@@ -159,20 +172,28 @@ export default {
           // this.$message.error('暂无可设计的图片')
           return
         }
+        this.getCurIndex(0)
         this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step1-2.ea5032d.mp4'
+        this.show()
       }
       if (value === '3') {
-        if (this.curIndex === '') {
-          // this.$message.error('请选择其中一种户型图')
-          return
-        }
+        // if (this.curIndex === '') {
+        //   // this.$message.error('请选择其中一种户型图')
+        //   return
+        // }
         this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step2-3.277204f.mp4'
+        this.show()
       }
       if (value === '4') {
         this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step3-4.617272e.mp4'
+        this.show()
+        this.getRecommend()
+      }
+      if (value === '5') {
+        // this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step3-4.617272e.mp4'
       }
       this.curStep = value
-      this.show()
+      // this.show()
     },
     async queryLayoutDataByHouseType (id) {
       const res = await HomeServices.queryLayoutDataByHouseType({id})
@@ -182,17 +203,30 @@ export default {
       this.layoutList = layoutList
       this.curStep = '1'
       this.curIndex = ''
+
+      const re = await HomeServices.query4GroupImageList({id})
+      console.log(re.data, '===res22222==')
+      this.imgList3 = re.data.data
     },
     getCurIndex (index) {
       const layoutList = JSON.parse(JSON.stringify(this.layoutList))
       this.curIndex = index
-      this.step3Img = layoutList[index].effectPictureList[0]
+      // this.step3Img = layoutList[index].effectPictureList[0]
       this.imgList4 = layoutList[index].effectPictureList.splice(1, 6) || []
     },
     restData () {
       this.step1Img = ''
       this.curStep = '1'
       this.curIndex = ''
+    },
+    selectImg (par, chi) {
+      const value = this.imgList3[par].effectPictureDtoList[chi].select
+      this.imgList3[par].effectPictureDtoList[chi].select = !value
+    },
+    async getRecommend () {
+      const res = await HomeServices.queryUserSelectRecommend(this.imgList3)
+      console.log(res, '===getRecommend==')
+      this.step4Img = res.data.data[0] || ''
     }
   }
 } 
@@ -355,7 +389,7 @@ export default {
         color: #A4A4A4;
       }
     }
-    .step-3 {
+    .step-4 {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -398,7 +432,7 @@ export default {
         }
       }
     }
-    .step-4 {
+    .step-5 {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -571,6 +605,71 @@ export default {
       }
       .action-btn-active {
         background-image: url("../assets/step2-btn-active.png");
+      }
+    }
+
+    .step-3 {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 0;
+      .step-title {
+        font-size: rem(60);
+        font-family: PingFang SC;
+        font-weight: 400;
+        color: #FC6421;
+        margin-top: rem(12);
+        align-self: flex-start;
+      }
+      .action-btn {
+        width: rem(427);
+        height: rem(132);
+        background-image: url("../assets/step2-btn.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        cursor: pointer;
+      }
+      .action-btn-active {
+        background-image: url("../assets/step2-btn-active.png");
+      }
+    }
+    .img-contain {
+      margin-top: rem(67);
+      width: rem(3242);
+      height: rem(1570);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+
+      .item-model {
+        box-sizing: border-box;
+        width: rem(1451);
+        height: rem(694);
+        padding: rem(42) rem(50);
+        display: flex;
+        justify-content: space-between;
+        background-image: url("../assets/step3-bg.png");
+        background-size: cover;
+        .item-img {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          position: relative;
+          .img {
+            width: rem(640);
+            height: rem(609);
+            cursor: pointer;
+            object-fit: cover;
+          }
+          .icon {
+            width: rem(50);
+            height: rem(50);
+            position: absolute;
+            top: rem(31);
+            right: rem(25);
+          }
+        }
+        
       }
     }
   }
