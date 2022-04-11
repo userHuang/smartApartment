@@ -622,15 +622,15 @@ export default {
         align-self: flex-start;
       }
       .action-btn {
-        width: rem(427);
-        height: rem(132);
-        background-image: url("../assets/step2-btn.png");
+        width: rem(323);
+        height: rem(270);
+        background-image: url("../assets/recommend-btn.png");
         background-size: contain;
         background-repeat: no-repeat;
         cursor: pointer;
       }
       .action-btn-active {
-        background-image: url("../assets/step2-btn-active.png");
+        background-image: url("../assets/recommend-btn.png");
       }
     }
     .img-contain {
