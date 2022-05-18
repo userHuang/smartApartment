@@ -101,6 +101,7 @@ export default {
   },
   created () {
     this.step1Img = ''
+    this.queryStaticResource()
   },
   mounted () {
     // 连接选项
@@ -144,7 +145,6 @@ export default {
     })
     //接收消息
     client.on('message', (topic, message) => {
-      console.log('message：', message.toString())
       console.log('收到消息：', topic, message.toString())
       let data = message.toString()
       if (data) {
@@ -173,7 +173,8 @@ export default {
           return
         }
         this.getCurIndex(0)
-        this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step1-2.ea5032d.mp4'
+        // this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step1-2.ea5032d.mp4'
+        this.curVideo = this.videoUrl_1_2
         this.show()
       }
       if (value === '3') {
@@ -181,16 +182,19 @@ export default {
         //   // this.$message.error('请选择其中一种户型图')
         //   return
         // }
-        this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step2-3.277204f.mp4'
+        // this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step2-3.277204f.mp4'
+        this.curVideo = this.videoUrl_2_3
         this.show()
       }
       if (value === '4') {
-        this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step3-4.617272e.mp4'
+        // this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step3-4.617272e.mp4'
+        this.curVideo = this.videoUrl_3_4
         this.show()
         this.getRecommend()
       }
       if (value === '5') {
-        // this.curVideo = 'https://metaother.oss-cn-beijing.aliyuncs.com/nd-wisdom-layout/media/step3-4.617272e.mp4'
+        this.curVideo = this.videoUrl_4_5
+        this.show()
       }
       this.curStep = value
       // this.show()
@@ -205,8 +209,7 @@ export default {
       this.curIndex = ''
 
       const re = await HomeServices.query4GroupImageList({id})
-      console.log(re.data, '===res22222==')
-      this.imgList3 = re.data.data
+      this.imgList3 = re.data.data ? re.data.data : this.imgList3
     },
     getCurIndex (index) {
       const layoutList = JSON.parse(JSON.stringify(this.layoutList))
@@ -225,8 +228,16 @@ export default {
     },
     async getRecommend () {
       const res = await HomeServices.queryUserSelectRecommend(this.imgList3)
-      console.log(res, '===getRecommend==')
-      this.step4Img = res.data.data[0] || ''
+      const data = res.data.data
+      this.step4Img = data[0].imageUrl
+      this.videoUrl_4_5 = data[0].videoUrl
+    },
+    async queryStaticResource () {
+      const res = await HomeServices.queryStaticResource(this.imgList3)
+      const data = res.data.data
+      this.videoUrl_1_2 = data[1]
+      this.videoUrl_2_3 = data[2]
+      this.videoUrl_3_4 = data[3]
     }
   }
 } 

@@ -47,5 +47,12 @@ export default {
       method: 'post',
       data
     })
+  },
+  queryStaticResource (params) {
+    return Services.request({
+      url: `/nd-wisdom-layout/data/queryStaticResource`,
+      method: 'get',
+      params
+    })
   }
 }
